@@ -25,6 +25,9 @@ defmodule Backend.Users.User do
 
   defp default_role(changeset) do
     role = get_field(changeset, :role)
-    if is_binary(role) and role != "", do: changeset, else: put_change(changeset, :role, "operator")
+
+    if is_binary(role) and role != "",
+      do: changeset,
+      else: put_change(changeset, :role, "operator")
   end
 end

@@ -32,7 +32,8 @@ defmodule Backend.Chat.ChannelServer do
      %{
        channel_id: channel_id,
        last_seq: last_seq,
-       persist_timeout_ms: Application.get_env(:backend, :chat_persist_timeout_ms, @persist_timeout_ms),
+       persist_timeout_ms:
+         Application.get_env(:backend, :chat_persist_timeout_ms, @persist_timeout_ms),
        pending_persists: %{}
      }}
   end
@@ -123,7 +124,8 @@ defmodule Backend.Chat.ChannelServer do
               {:ok, %{duplicate: false, accepted: accepted_payload(message), message: payload}}
             )
 
-            {:noreply, %{state | pending_persists: remaining, last_seq: max(state.last_seq, message.seq_no)}}
+            {:noreply,
+             %{state | pending_persists: remaining, last_seq: max(state.last_seq, message.seq_no)}}
 
           {:error, _reason} ->
             # If a duplicate raced through retries/reconnects, return the persisted message.
@@ -145,7 +147,11 @@ defmodule Backend.Chat.ChannelServer do
                 )
 
                 {:noreply,
-                 %{state | pending_persists: remaining, last_seq: max(state.last_seq, message.seq_no)}}
+                 %{
+                   state
+                   | pending_persists: remaining,
+                     last_seq: max(state.last_seq, message.seq_no)
+                 }}
             end
         end
     end

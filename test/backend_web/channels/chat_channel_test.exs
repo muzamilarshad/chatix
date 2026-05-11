@@ -218,10 +218,21 @@ defmodule BackendWeb.ChatChannelTest do
     pow_config = [otp_app: :backend]
     store_config = [backend: Pow.Store.Backend.EtsCache, pow_config: pow_config]
     token = Pow.UUID.generate()
-    conn = Plug.Test.conn(:get, "/") |> Map.put(:secret_key_base, BackendWeb.Endpoint.config(:secret_key_base))
-    signed_token = Pow.Plug.sign_token(conn, Atom.to_string(BackendWeb.APIAuthPlug), token, pow_config)
 
-    user = %User{id: user_id, email: "ws-#{user_id}@chatix-lite.local", name: "WS User", role: "operator"}
+    conn =
+      Plug.Test.conn(:get, "/")
+      |> Map.put(:secret_key_base, BackendWeb.Endpoint.config(:secret_key_base))
+
+    signed_token =
+      Pow.Plug.sign_token(conn, Atom.to_string(BackendWeb.APIAuthPlug), token, pow_config)
+
+    user = %User{
+      id: user_id,
+      email: "ws-#{user_id}@chatix-lite.local",
+      name: "WS User",
+      role: "operator"
+    }
+
     CredentialsCache.put(store_config, token, {user, []})
 
     signed_token

@@ -58,7 +58,9 @@ defmodule BackendWeb.ChannelControllerTest do
     refute other_channel_id in channel_ids
   end
 
-  test "POST /api/channels/:channel_id/members adds member for existing member only", %{conn: conn} do
+  test "POST /api/channels/:channel_id/members adds member for existing member only", %{
+    conn: conn
+  } do
     now = now_iso()
     workspace_id = insert_workspace("ws-members", now)
     owner_id = insert_user("owner", now)
@@ -99,7 +101,12 @@ defmodule BackendWeb.ChannelControllerTest do
   defp insert_user(prefix, now) do
     Repo.query!(
       "INSERT INTO users (email, name, role, inserted_at) VALUES (?1, ?2, ?3, ?4)",
-      ["#{prefix}-#{System.unique_integer([:positive])}@chatix-lite.local", "Test #{prefix}", "operator", now]
+      [
+        "#{prefix}-#{System.unique_integer([:positive])}@chatix-lite.local",
+        "Test #{prefix}",
+        "operator",
+        now
+      ]
     )
 
     %{rows: [[user_id]]} = Repo.query!("SELECT id FROM users ORDER BY id DESC LIMIT 1")
@@ -128,7 +135,9 @@ defmodule BackendWeb.ChannelControllerTest do
     store_config = [backend: Pow.Store.Backend.EtsCache, pow_config: pow_config]
     token = Pow.UUID.generate()
     conn = %{conn | secret_key_base: BackendWeb.Endpoint.config(:secret_key_base)}
-    signed_token = Pow.Plug.sign_token(conn, Atom.to_string(BackendWeb.APIAuthPlug), token, pow_config)
+
+    signed_token =
+      Pow.Plug.sign_token(conn, Atom.to_string(BackendWeb.APIAuthPlug), token, pow_config)
 
     user =
       %User{

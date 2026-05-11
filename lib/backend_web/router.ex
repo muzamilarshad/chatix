@@ -19,6 +19,7 @@ defmodule BackendWeb.Router do
     delete "/auth/logout", AuthSessionController, :delete
 
     options "/uploads", UploadController, :create
+    options "/workspaces", WorkspaceController, :create
     options "/channels", ChannelController, :create
     options "/channels/:channel_id/members", ChannelMemberController, :create
     options "/channels/:channel_id/messages", MessageController, :index
@@ -31,6 +32,8 @@ defmodule BackendWeb.Router do
     pipe_through [:api, :api_protected]
 
     post "/uploads", UploadController, :create
+    get "/workspaces", WorkspaceController, :index
+    post "/workspaces", WorkspaceController, :create
     get "/channels", ChannelController, :index
     post "/channels", ChannelController, :create
     post "/channels/:channel_id/members", ChannelMemberController, :create

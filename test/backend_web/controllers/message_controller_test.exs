@@ -99,9 +99,17 @@ defmodule BackendWeb.MessageControllerTest do
     store_config = [backend: Pow.Store.Backend.EtsCache, pow_config: pow_config]
     token = Pow.UUID.generate()
     conn = %{conn | secret_key_base: BackendWeb.Endpoint.config(:secret_key_base)}
-    signed_token = Pow.Plug.sign_token(conn, Atom.to_string(BackendWeb.APIAuthPlug), token, pow_config)
 
-    user = %User{id: user_id, email: "test-#{user_id}@chatix-lite.local", name: "Test User", role: "operator"}
+    signed_token =
+      Pow.Plug.sign_token(conn, Atom.to_string(BackendWeb.APIAuthPlug), token, pow_config)
+
+    user = %User{
+      id: user_id,
+      email: "test-#{user_id}@chatix-lite.local",
+      name: "Test User",
+      role: "operator"
+    }
+
     CredentialsCache.put(store_config, token, {user, []})
 
     put_req_header(conn, "authorization", "Bearer #{signed_token}")

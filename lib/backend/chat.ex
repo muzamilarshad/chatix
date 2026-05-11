@@ -94,12 +94,59 @@ defmodule Backend.Chat do
     end
   end
 
+  def list_workspaces(limit \\ 100) do
+    safe_limit = normalize_limit(limit)
+
+    workspaces =
+      Repo.all(
+        from w in "workspaces",
+          order_by: [desc: w.id],
+          limit: ^safe_limit,
+          select: %{
+            id: w.id,
+            name: w.name,
+            inserted_at: w.inserted_at
+          }
+      )
+
+    {:ok, workspaces}
+  end
+
+  def create_workspace(attrs) when is_map(attrs) do
+    with {:ok, name} <- validate_workspace_name(Map.get(attrs, "name", Map.get(attrs, :name))) do
+      now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+      now_iso = DateTime.to_iso8601(now)
+
+      Repo.query!(
+        "INSERT INTO workspaces (name, inserted_at) VALUES (?1, ?2)",
+        [name, now_iso]
+      )
+
+      %{rows: [[workspace_id]]} =
+        Repo.query!("SELECT id FROM workspaces ORDER BY id DESC LIMIT 1")
+
+      {:ok,
+       %{
+         id: workspace_id,
+         name: name,
+         inserted_at: now
+       }}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def create_default_workspace_for_user(user_name) do
+    create_workspace(%{"name" => default_workspace_name(user_name)})
+  end
+
   def create_channel(workspace_id, creator_user_id, attrs) do
     with {:ok, workspace_id} <- parse_id(workspace_id),
          {:ok, creator_user_id} <- parse_id(creator_user_id),
          true <- workspace_exists?(workspace_id),
          {:ok, name} <- validate_channel_name(Map.get(attrs, "name", Map.get(attrs, :name))),
-         {:ok, kind} <- validate_channel_kind(Map.get(attrs, "kind", Map.get(attrs, :kind, "group"))) do
+         {:ok, kind} <-
+           validate_channel_kind(Map.get(attrs, "kind", Map.get(attrs, :kind, "group"))) do
       now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       Repo.transaction(fn ->
@@ -523,6 +570,32 @@ defmodule Backend.Chat do
   end
 
   defp validate_channel_kind(_), do: {:error, :invalid_channel_kind}
+
+  defp validate_workspace_name(value) when is_binary(value) do
+    trimmed = String.trim(value)
+
+    if trimmed == "" or String.length(trimmed) > 120 do
+      {:error, :invalid_workspace_name}
+    else
+      {:ok, trimmed}
+    end
+  end
+
+  defp validate_workspace_name(_), do: {:error, :invalid_workspace_name}
+
+  defp default_workspace_name(user_name) when is_binary(user_name) do
+    trimmed_name =
+      user_name
+      |> String.trim()
+      |> case do
+        "" -> "Personal"
+        value -> value
+      end
+
+    "#{trimmed_name}'s Workspace"
+  end
+
+  defp default_workspace_name(_), do: "Personal Workspace"
 
   defp normalize_status(status) when is_binary(status) do
     trimmed = String.trim(status)

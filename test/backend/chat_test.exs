@@ -64,7 +64,10 @@ defmodule Backend.ChatTest do
     assert {:ok, _} = Chat.join_channel(channel_id, user_id, 0)
 
     assert {:ok, %{accepted: accepted}} =
-             Chat.send_message(channel_id, user_id, %{"client_msg_id" => "hide-me-1", "body" => "x"})
+             Chat.send_message(channel_id, user_id, %{
+               "client_msg_id" => "hide-me-1",
+               "body" => "x"
+             })
 
     mid = accepted.server_msg_id
     assert {:ok, [_one]} = Chat.list_channel_messages(channel_id, user_id, 10)

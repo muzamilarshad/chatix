@@ -17,8 +17,15 @@ defmodule BackendWeb.AuthRegistrationControllerTest do
 
     payload = json_response(conn, 201)
     assert payload["user"]["role"] == "operator"
+    assert is_integer(payload["workspace"]["id"])
+    assert String.contains?(payload["workspace"]["name"], "New User")
 
     user = Repo.get_by!(User, email: email)
     assert user.role == "operator"
+
+    workspace_rows =
+      Repo.query!("SELECT id, name FROM workspaces WHERE id = ?1", [payload["workspace"]["id"]]).rows
+
+    assert workspace_rows == [[payload["workspace"]["id"], payload["workspace"]["name"]]]
   end
 end

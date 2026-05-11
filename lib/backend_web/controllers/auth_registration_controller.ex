@@ -1,6 +1,7 @@
 defmodule BackendWeb.AuthRegistrationController do
   use BackendWeb, :controller
 
+  alias Backend.Chat
   alias Ecto.Changeset
 
   def create(conn, %{"email" => _, "password" => _, "name" => _} = params) do
@@ -10,17 +11,30 @@ defmodule BackendWeb.AuthRegistrationController do
     |> Pow.Plug.create_user(attrs)
     |> case do
       {:ok, user, conn} ->
-        conn
-        |> put_status(:created)
-        |> json(%{
-          user: %{
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role
-          },
-          access_token: conn.private.api_access_token
-        })
+        case Chat.create_default_workspace_for_user(user.name) do
+          {:ok, workspace} ->
+            conn
+            |> put_status(:created)
+            |> json(%{
+              user: %{
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role
+              },
+              workspace: %{
+                id: workspace.id,
+                name: workspace.name,
+                inserted_at: DateTime.to_iso8601(workspace.inserted_at)
+              },
+              access_token: conn.private.api_access_token
+            })
+
+          {:error, _reason} ->
+            conn
+            |> put_status(:internal_server_error)
+            |> json(%{error: "registration_succeeded_workspace_creation_failed"})
+        end
 
       {:error, changeset, conn} ->
         conn

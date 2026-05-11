@@ -22,7 +22,8 @@ defmodule BackendWeb.UserSocket do
   @impl true
   def id(socket), do: "user_socket:#{socket.assigns.user_id}"
 
-  defp fetch_access_token(%{"access_token" => token}) when is_binary(token) and byte_size(token) > 0 do
+  defp fetch_access_token(%{"access_token" => token})
+       when is_binary(token) and byte_size(token) > 0 do
     {:ok, token}
   end
 

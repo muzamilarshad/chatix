@@ -24,7 +24,9 @@ config :backend, BackendWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 comma_list = fn
-  nil -> nil
+  nil ->
+    nil
+
   value ->
     value
     |> String.split(",")

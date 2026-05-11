@@ -5,7 +5,13 @@ defmodule Backend.Uploads.Storage do
   @allowed_content_types Application.compile_env(
                            :backend,
                            :allowed_upload_content_types,
-                           ["image/png", "image/jpeg", "image/gif", "image/webp", "application/pdf"]
+                           [
+                             "image/png",
+                             "image/jpeg",
+                             "image/gif",
+                             "image/webp",
+                             "application/pdf"
+                           ]
                          )
   @allowed_extensions Application.compile_env(
                         :backend,

@@ -35,8 +35,7 @@ defmodule BackendWeb.ChatChannel do
             %{
               code: "invalid_payload",
               reason: "client_msg_id and either non-empty body or attachments are required"
-            }},
-           socket}
+            }}, socket}
 
         {:error, :not_found_or_not_member} ->
           {:reply,
